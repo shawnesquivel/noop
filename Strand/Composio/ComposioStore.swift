@@ -81,6 +81,14 @@ struct ComposioToolkit: Identifiable, Hashable {
     ]
 }
 
+struct DayEvent: Identifiable, Equatable {
+    let id: String
+    let title: String
+    let start: Date
+    let end: Date
+    let attendees: [String]
+}
+
 struct ComposioConnection: Identifiable {
     let id: String
     let toolkitSlug: String
@@ -275,6 +283,36 @@ final class ComposioStore: ObservableObject {
             throw ComposioError.badResponse(Self.str(resp, "error") ?? "tool reported failure")
         }
         return (resp["data"] as? [String: Any]) ?? [:]
+    }
+
+    /// Today's timed events, for the day timeline. All-day events are skipped.
+    func todayEvents() async throws -> [DayEvent] {
+        let cal = Calendar.current
+        let dayStart = cal.startOfDay(for: Date())
+        let dayEnd = dayStart.addingTimeInterval(86_400)
+        let iso = ISO8601DateFormatter()
+        let data = try await execute("GOOGLECALENDAR_EVENTS_LIST", arguments: [
+            "calendarId": "primary",
+            "timeMin": iso.string(from: dayStart),
+            "timeMax": iso.string(from: dayEnd),
+            "singleEvents": true,
+            "orderBy": "startTime",
+            "maxResults": 50,
+        ])
+        let items = (data["items"] as? [[String: Any]]) ?? (data["events"] as? [[String: Any]]) ?? []
+        let parser = ISO8601DateFormatter()
+        parser.formatOptions = [.withInternetDateTime]
+        return items.compactMap { e in
+            guard let startRaw = (e["start"] as? [String: Any]).flatMap({ Self.str($0, "dateTime") }),
+                  let endRaw = (e["end"] as? [String: Any]).flatMap({ Self.str($0, "dateTime") }),
+                  let start = parser.date(from: startRaw),
+                  let end = parser.date(from: endRaw) else { return nil }
+            let attendees = (e["attendees"] as? [[String: Any]])?
+                .compactMap { Self.str($0, "email") } ?? []
+            return DayEvent(id: Self.str(e, "id") ?? UUID().uuidString,
+                            title: Self.str(e, "summary") ?? "(untitled)",
+                            start: start, end: end, attendees: attendees)
+        }
     }
 
     /// Upcoming calendar events (next 7 days, first 5).
