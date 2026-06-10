@@ -17,6 +17,7 @@ enum NavItem: String, CaseIterable, Identifiable, Hashable {
     case health = "Health"
     case stress = "Stress"
     case appleHealth = "Apple Health"
+    case connect = "Connect"
     case dataSources = "Data Sources"
     case notifications = "Notifications"
     case automation = "Automations"
@@ -44,6 +45,7 @@ enum NavItem: String, CaseIterable, Identifiable, Hashable {
         case .health: return "Health"
         case .stress: return "Stress"
         case .appleHealth: return "Apple Health"
+        case .connect: return "Connect"
         case .dataSources: return "Data Sources"
         case .notifications: return "Notifications"
         case .automation: return "Automations"
@@ -69,6 +71,7 @@ enum NavItem: String, CaseIterable, Identifiable, Hashable {
         case .health: return "heart.text.square.fill"
         case .stress: return "gauge.with.dots.needle.50percent"
         case .appleHealth: return "heart.fill"
+        case .connect: return "link.badge.plus"
         case .dataSources: return "square.and.arrow.down.fill"
         case .notifications: return "bell.badge.fill"
         case .automation: return "wand.and.stars"
@@ -135,6 +138,7 @@ struct RootView: View {
         case .health: HealthView()
         case .stress: StressView()
         case .appleHealth: AppleHealthView()
+        case .connect: ComposioView()
         case .dataSources: DataSourcesView()
         case .notifications: NotificationSettingsView()
         case .automation: AutomationsView()

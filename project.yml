@@ -63,6 +63,9 @@ targets:
         com.apple.security.app-sandbox: true
         com.apple.security.device.bluetooth: true
         com.apple.security.files.user-selected.read-write: true
+        # Outbound HTTPS for the Composio Connect tab (backend.composio.dev) and the
+        # optional AI Coach. Off the data path: strap data still never leaves the Mac.
+        com.apple.security.network.client: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.noopapp.noop
